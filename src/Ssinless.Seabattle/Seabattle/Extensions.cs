@@ -16,7 +16,7 @@ namespace Seabattle
             form.Icon = Global.Logo2;
         }
 
-        public static void AddField(this Form form, Field field, int left, int top)
+        public static void AddField(this Form form, User user, int left, int top)
         {
             int x = left, y = top;
 
@@ -24,9 +24,9 @@ namespace Seabattle
             {
                 for (var j = 0; j < Field.Width; j++)
                 {
-                    field[i, j].Left = x;
-                    field[i, j].Top = y;
-                    form.Controls.Add(field[i, j].View);
+                    user[i, j].Left = x;
+                    user[i, j].Top = y;
+                    form.Controls.Add(user[i, j].View);
 
                     x += Field.Gap + Cell.Width;
                 }

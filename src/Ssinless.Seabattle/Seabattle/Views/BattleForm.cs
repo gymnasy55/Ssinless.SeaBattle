@@ -13,30 +13,19 @@ namespace Seabattle.Views
 {
     public partial class BattleForm : Form
     {
-        private enum User
-        {
-            User1,
-            User2
-        }
-
         private readonly Timer _timer;
 
         private readonly Label _lblTimer;
         private readonly Label _lblPlayer;
 
-        private User _user;
-
-        private readonly Field _field1;
-        private readonly Field _field2;
-
-        public BattleForm(Field field1, Field field2)
+        public BattleForm()
         {
             InitializeComponent();
             this.SetIcon();
 
             _timer = new Timer()
             {
-                Enabled = true,
+                Enabled = false,
                 Interval = 1000
             };
 
@@ -73,49 +62,22 @@ namespace Seabattle.Views
 
             Controls.Add(_lblTimer);
             Controls.Add(_lblPlayer);
-
-            _field1 = field1;
-            _field2 = field2;
-
-            
         }
 
-        public void Start()
+        public new DialogResult ShowDialog()
         {
-            _user = User.User2;
-            ChangePlayer();
-            ShowDialog();
+            _timer.Enabled = true;
+            return base.ShowDialog();
         }
 
         private void TimerOnTick(object sender, EventArgs e)
         {
-            _lblTimer.Text = $"{Convert.ToInt32(_lblTimer.Text.Substring(0, _lblTimer.Text.Length - 2)) + 1} s";
+            _lblTimer.Text = $@"{Convert.ToInt32(_lblTimer.Text.Substring(0, _lblTimer.Text.Length - 2)) + 1} s";
         }
 
-        public void ChangePlayer()
+        public void SetPlayerText(string text)
         {
-            _user = _user switch
-            {
-                User.User1 => User.User2,
-                User.User2 => User.User1,
-                _ => User.User1
-            };
-
-            switch (_user)
-            {
-                case User.User1:
-                    _lblPlayer.Text = "User 1";
-                    _field1.Enabled = false;
-                    _field2.Enabled = true;
-                    break;
-                case User.User2:
-                    _lblPlayer.Text = "User 2";
-                    _field1.Enabled = true;
-                    _field2.Enabled = false;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
+            _lblPlayer.Text = text;
         }
     }
 }

@@ -34,6 +34,21 @@ namespace Seabattle.Models
             }
         }
 
+        public int CellsIsShip
+        {
+            get
+            {
+                var result = 0;
+
+                ForEach(cell =>
+                {
+                    if (cell.IsShip) result++;
+                });
+
+                return result;
+            }
+        }
+
         public void ForEach(Action<Cell> action)
         {
             foreach (var cell in _cells) action(cell);

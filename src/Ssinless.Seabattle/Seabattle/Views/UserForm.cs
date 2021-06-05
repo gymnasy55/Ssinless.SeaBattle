@@ -6,83 +6,46 @@ namespace Seabattle.Views
 {
     public partial class UserForm : Form
     {
-        private (ShipType type, ShipOrientation orientation) _selectedShip;
-
-        public event Action ShipChanged;
+        public event Action<Ship> ShipChanged;
 
         public UserForm()
         {
             InitializeComponent();
             this.SetIcon();
 
-            ShipChanged = SetSelected;
+            ShipChanged = null;
         }
 
-        private void SetSelected()
-        {
-            var chosenShip = _selectedShip switch
-            {
-                (ShipType.Battleship, ShipOrientation.Horizontal) => "Horizontal Battleship",
-                (ShipType.Battleship, ShipOrientation.Vertical) => "Vertical Battleship",
-                (ShipType.Cruiser, ShipOrientation.Horizontal) => "Horizontal Cruiser",
-                (ShipType.Cruiser, ShipOrientation.Vertical) => "Vertical Cruiser",
-                (ShipType.Destroyer, ShipOrientation.Horizontal) => "Horizontal Destroyer",
-                (ShipType.Destroyer, ShipOrientation.Vertical) => "Vertical Destroyer",
-                (ShipType.Boat, ShipOrientation.Vertical & ShipOrientation.Horizontal) => "Boat",
-                _ => "Nothing"
-            };
-
-            lblSelected.Text = $"Selected:\n{chosenShip}.";
-        }
+        public void SetSelectedShipText(string text) => lblSelected.Text = $"Selected:\n{text}.";
 
         #region Ship Changed Methods
 
-        private void btnBattleshipHorizontal_Click(object sender, EventArgs e)
-        {
-            _selectedShip = (ShipType.Battleship, ShipOrientation.Horizontal);
-            ShipChanged?.Invoke();
-        }
+        private void btnBattleshipHorizontal_Click(object sender, EventArgs e) => 
+            ShipChanged?.Invoke(new Ship(ShipType.Battleship, ShipOrientation.Horizontal));
 
-        private void btnBattleshipVertical_Click(object sender, EventArgs e)
-        {
-            _selectedShip = (ShipType.Battleship, ShipOrientation.Vertical);
-            ShipChanged?.Invoke();
-        }
+        private void btnBattleshipVertical_Click(object sender, EventArgs e) => 
+            ShipChanged?.Invoke(new Ship(ShipType.Battleship, ShipOrientation.Vertical));
 
-        private void btnCruiserHorizontal_Click(object sender, EventArgs e)
-        {
-            _selectedShip = (ShipType.Cruiser, ShipOrientation.Horizontal);
-            ShipChanged?.Invoke();
-        }
+        private void btnCruiserHorizontal_Click(object sender, EventArgs e) => 
+            ShipChanged?.Invoke(new Ship(ShipType.Cruiser, ShipOrientation.Horizontal));
 
-        private void btnCruiserVertical_Click(object sender, EventArgs e)
-        {
-            _selectedShip = (ShipType.Cruiser, ShipOrientation.Vertical);
-            ShipChanged?.Invoke();
-        }
+        private void btnCruiserVertical_Click(object sender, EventArgs e) => 
+            ShipChanged?.Invoke(new Ship(ShipType.Cruiser, ShipOrientation.Vertical));
 
-        private void btnDestroyerHorizontal_Click(object sender, EventArgs e)
-        {
-            _selectedShip = (ShipType.Destroyer, ShipOrientation.Horizontal);
-            ShipChanged?.Invoke();
-        }
+        private void btnDestroyerHorizontal_Click(object sender, EventArgs e) => 
+            ShipChanged?.Invoke(new Ship(ShipType.Destroyer, ShipOrientation.Horizontal));
 
-        private void btnDestroyerVertical_Click(object sender, EventArgs e)
-        {
-            _selectedShip = (ShipType.Destroyer, ShipOrientation.Vertical);
-            ShipChanged?.Invoke();
-        }
+        private void btnDestroyerVertical_Click(object sender, EventArgs e) => 
+            ShipChanged?.Invoke(new Ship(ShipType.Destroyer, ShipOrientation.Vertical));
 
-        private void btnBoat_Click(object sender, EventArgs e)
-        {
-            _selectedShip = (ShipType.Boat, ShipOrientation.Vertical & ShipOrientation.Horizontal);
-            ShipChanged?.Invoke();
-        }
+        private void btnBoat_Click(object sender, EventArgs e) =>
+            ShipChanged?.Invoke(new Ship(ShipType.Boat, ShipOrientation.Vertical & ShipOrientation.Horizontal));
 
         #endregion
 
         private void btnNext_Click(object sender, EventArgs e)
         {
+            ShipChanged?.Invoke(new Ship());
             Close();
         }
     }

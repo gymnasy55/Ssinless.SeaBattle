@@ -11,6 +11,7 @@ namespace Seabattle.Models
         Battleship,
         Cruiser,
         Destroyer,
-        Boat
+        Boat,
+        None
     }
 }

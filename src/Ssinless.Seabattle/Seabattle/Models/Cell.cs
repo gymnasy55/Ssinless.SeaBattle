@@ -58,13 +58,6 @@ namespace Seabattle.Models
 
         private readonly List<EventHandler> _clickHandlers;
 
-        public int X { get; }
-        public int Y { get; }
-
-        public bool IsShip { get; set; }
-        public bool IsDestroyed { get; set; }
-        public bool IsChecked { get; set; }
-
         private event EventHandler Click
         {
             add
@@ -74,6 +67,13 @@ namespace Seabattle.Models
             }
             remove => _button.Click -= value;
         }
+
+        public int X { get; }
+        public int Y { get; }
+
+        public bool IsShip { get; set; }
+        public bool IsDestroyed { get; set; }
+        public bool IsChecked { get; set; }
 
         public Cell(int y, int x)
         {
@@ -97,12 +97,36 @@ namespace Seabattle.Models
             };
         }
 
-        public void SetClickEvent(Action<object, EventArgs, Field> eventHandler, Field field)
+        public void Mark()
+        {
+            IsShip = true;
+            Text = "X";
+        }
+
+        public bool Open()
+        {
+            if (IsShip)
+            {
+                Text = "X";
+                IsDestroyed = true;
+                IsChecked = true;
+                SetClickEvent(null, null);
+                return true;
+            }
+
+            Text = "•";
+            IsChecked = true;
+
+            SetClickEvent(null, null);
+            return false;
+        }
+
+        public void SetClickEvent(Action<object, EventArgs, User> eventHandler, User user)
         {
             foreach (var handler in _clickHandlers) Click -= handler;
             _clickHandlers.Clear();
 
-            Click += (sender, args) => eventHandler?.Invoke(this, args, field);
+            Click += (sender, args) => eventHandler?.Invoke(this, args, user);
         }
     }
 }

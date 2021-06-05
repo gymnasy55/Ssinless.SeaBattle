@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Drawing;
+using System.Windows.Forms;
 using Seabattle.Models;
+using Seabattle.Service;
 using Seabattle.Views;
 
 namespace Seabattle.Controllers
 {
     public class Game
     {
-        public static Size DefaultUserFormClientSize { get; }
-        public static Size DefaultUserFormMinimumSize { get; }
-        public static Size DefaultGameFormClientSize { get; }
-        public static Size DefaultGameFormMinimumSize { get; }
+        private static Size DefaultUserFormClientSize { get; }
+        private static Size DefaultUserFormMinimumSize { get; }
+
+        private static Size DefaultBattleFormClientSize { get; }
+        private static Size DefaultBattleFormMinimumSize { get; }
 
         static Game()
         {
@@ -19,12 +22,14 @@ namespace Seabattle.Controllers
             DefaultUserFormMinimumSize = new Size(Field.Width * (Cell.Width + Field.Gap) + 160,
                 Field.Height * (Cell.Height + Field.Gap) + 100);
 
-            DefaultGameFormClientSize = new Size(DefaultUserFormClientSize.Width * 2 - 125, DefaultUserFormClientSize.Height);
-            DefaultGameFormMinimumSize = new Size(DefaultUserFormMinimumSize.Width * 2 - 125, DefaultUserFormMinimumSize.Height);
+            DefaultBattleFormClientSize = new Size(DefaultUserFormClientSize.Width * 2 - 125, DefaultUserFormClientSize.Height);
+            DefaultBattleFormMinimumSize = new Size(DefaultUserFormMinimumSize.Width * 2 - 125, DefaultUserFormMinimumSize.Height);
         }
 
-        private readonly Field _field1;
-        private readonly Field _field2;
+        private readonly User _user1;
+        private readonly User _user2;
+
+        private User _currentUser;
 
         private readonly UserForm _userForm1;
         private readonly UserForm _userForm2;
@@ -33,86 +38,109 @@ namespace Seabattle.Controllers
 
         public Game()
         {
-            _field1 = new Field();
+            _user1 = new User();
+            _user2 = new User();
 
-            _userForm1 = new UserForm()
+            _userForm1 = Game.InitializeUserForm();
+            _userForm2 = Game.InitializeUserForm();
+
+            _battleForm = new BattleForm
             {
-                ClientSize = Game.DefaultUserFormClientSize,
-                MinimumSize = Game.DefaultUserFormMinimumSize
-            };
-
-            _field2 = new Field();
-
-            _userForm2 = new UserForm()
-            {
-                ClientSize = Game.DefaultUserFormClientSize,
-                MinimumSize = Game.DefaultUserFormMinimumSize
-            };
-
-            _battleForm = new BattleForm(_field1, _field2)
-            {
-                ClientSize = Game.DefaultGameFormClientSize,
-                MinimumSize = Game.DefaultGameFormMinimumSize
+                ClientSize = Game.DefaultBattleFormClientSize,
+                MinimumSize = Game.DefaultBattleFormMinimumSize
             };
         }
+
+        private static UserForm InitializeUserForm() =>
+            new UserForm
+            {
+                ClientSize = Game.DefaultUserFormClientSize,
+                MinimumSize = Game.DefaultUserFormMinimumSize
+            };
 
         public void Start()
         {
-            _userForm1.AddField(_field1, Cell.DefaultXIndention, Cell.DefaultYIndention);
-
-            _field1.ForEach(cell => cell.SetClickEvent(BtnClickedOnUserForm, _field1));
-
+            SetupUser(_user1, _userForm1);
             _userForm1.ShowDialog();
 
-            _userForm2.AddField(_field2, Cell.DefaultXIndention, Cell.DefaultYIndention);
-
-            _field2.ForEach(cell => cell.SetClickEvent(BtnClickedOnUserForm, _field2));
-
+            SetupUser(_user2, _userForm2);
             _userForm2.ShowDialog();
 
-            _battleForm.AddField(_field1, Cell.DefaultXIndention, Cell.DefaultYIndention);
-            _battleForm.AddField(_field2, Cell.DefaultXIndention + Game.DefaultUserFormClientSize.Width, Cell.DefaultYIndention);
-
-            _field1.ForEach(cell =>
-            {
-                cell.Text = "";
-                cell.SetClickEvent(BtnClickedOnBattleForm, _field1);
-            });
-            _field2.ForEach(cell =>
-            {
-                cell.Text = "";
-                cell.SetClickEvent(BtnClickedOnBattleForm, _field2);
-            });
-
-            _battleForm.Start();
+            SetupBattle(_user1, _user2, _battleForm);
+            _battleForm.ShowDialog();
         }
 
-        public void BtnClickedOnUserForm(object sender, EventArgs e, Field field)
+        private void SetupUser(User user, UserForm form)
         {
-            var cell = (Cell) sender;
-            cell.IsShip = true;
-            cell.Text = "X";
+            form.AddField(user, Cell.DefaultXIndention, Cell.DefaultYIndention);
+            form.ShipChanged += ship =>
+            {
+                user.SelectedShip = ship;
+                form.SetSelectedShipText(ship.ToString());
+            };
+
+            user.ForEach(cell => cell.SetClickEvent(BtnClickedOnUserForm, user));
         }
 
-        public void BtnClickedOnBattleForm(object sender, EventArgs e, Field field)
+        private void BtnClickedOnUserForm(object sender, EventArgs e, User user)
+        {
+            var cell = (Cell) sender;
+            cell.Mark();
+        }
+
+        private void SetupBattle(User user1, User user2, BattleForm form)
+        {
+            form.AddField(user1, Cell.DefaultXIndention, Cell.DefaultYIndention);
+            form.AddField(user2, Cell.DefaultXIndention + Game.DefaultUserFormClientSize.Width, Cell.DefaultYIndention);
+
+            user1.ForEach(cell =>
+            {
+                cell.Text = "";
+                cell.SetClickEvent(BtnClickedOnBattleForm, user2);
+            });
+            user2.ForEach(cell =>
+            {
+                cell.Text = "";
+                cell.SetClickEvent(BtnClickedOnBattleForm, user1);
+            });
+
+            _currentUser = user2;
+            ChangePlayer();
+        }
+
+        private void BtnClickedOnBattleForm(object sender, EventArgs e, User user)
         {
             var cell = (Cell) sender;
 
-            if (cell.IsShip)
+            if (cell.Open())
             {
-                cell.Text = "X";
-                cell.IsDestroyed = true;
-                cell.IsChecked = true;
-                cell.SetClickEvent(null, null);
+                user.Score++;
+                if (CheckWin())
+                {
+                    MessageService.Info(_currentUser == _user1 ? "User 1 won" : "User 2 won");
+                    Application.Restart();
+                }
+            } 
+            else ChangePlayer();
+        }
+
+        private void ChangePlayer()
+        {
+            if (_currentUser == _user2)
+            {
+                _user2.Enabled = true;
+                _user1.Enabled = false;
+                _battleForm.SetPlayerText("User 1");
+                _currentUser = _user1;
                 return;
             }
 
-            cell.Text = "•";
-            cell.IsChecked = true;
-
-            cell.SetClickEvent(null, null);
-
-            _battleForm.ChangePlayer();
+            _user2.Enabled = false;
+            _user1.Enabled = true;
+            _battleForm.SetPlayerText("User 2");
+            _currentUser = _user2;
         }
+
+        private bool CheckWin() => _user1.Score == _user2.CellsIsShip || _user2.Score == _user1.CellsIsShip;
     }
 }
