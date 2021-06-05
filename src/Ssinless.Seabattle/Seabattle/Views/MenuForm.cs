@@ -1,4 +1,5 @@
 ﻿using System.Windows.Forms;
+using Seabattle.Controllers;
 
 namespace Seabattle.Views
 {
