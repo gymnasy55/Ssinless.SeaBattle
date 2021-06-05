@@ -82,12 +82,6 @@ namespace Seabattle.Controllers
             user.ForEach(cell => cell.SetClickEvent(BtnClickedOnUserForm, user));
         }
 
-        private void BtnClickedOnUserForm(object sender, EventArgs e, User user)
-        {
-            var cell = (Cell) sender;
-            cell.Mark();
-        }
-
         private void SetupBattle(User user1, User user2, BattleForm form)
         {
             form.AddField(user1, Cell.DefaultXIndention, Cell.DefaultYIndention);
@@ -106,6 +100,12 @@ namespace Seabattle.Controllers
 
             _currentUser = user2;
             ChangePlayer();
+        }
+
+        private void BtnClickedOnUserForm(object sender, EventArgs e, User user)
+        {
+            var cell = (Cell) sender;
+            cell.Mark();
         }
 
         private void BtnClickedOnBattleForm(object sender, EventArgs e, User user)
