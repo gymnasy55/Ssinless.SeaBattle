@@ -18,11 +18,26 @@ namespace Seabattle.Models
             Gap = 2;
         }
 
-        public static implicit operator Cell[,](Field field) => field._cells;
-
         private readonly Cell[,] _cells;
 
         public Cell this[int y, int x] => _cells[y, x];
+
+        public bool Enabled
+        {
+            get => _cells.Cast<Cell>().Any(cell => cell.Enabled);
+            set
+            {
+                foreach (var cell in _cells)
+                {
+                    if (!cell.IsChecked || !value) cell.Enabled = value;
+                }
+            }
+        }
+
+        public void ForEach(Action<Cell> action)
+        {
+            foreach (var cell in _cells) action(cell);
+        }
 
         public Field()
         {

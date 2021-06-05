@@ -26,7 +26,7 @@ namespace Seabattle
                 {
                     field[i, j].Left = x;
                     field[i, j].Top = y;
-                    form.Controls.Add(field[i, j]);
+                    form.Controls.Add(field[i, j].View);
 
                     x += Field.Gap + Cell.Width;
                 }

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace Seabattle.Models
@@ -24,7 +27,14 @@ namespace Seabattle.Models
         #region Button Properties
 
         private readonly Button _button;
-        public static implicit operator Button(Cell cell) => cell._button;
+
+        public Control View => _button;
+
+        public string Text
+        {
+            get => _button.Text;
+            set => _button.Text = value;
+        }
 
         public int Left
         {
@@ -38,18 +48,39 @@ namespace Seabattle.Models
             set => _button.Top = value;
         }
 
+        public bool Enabled
+        {
+            get => _button.Enabled;
+            set => _button.Enabled = value;
+        }
+
         #endregion
+
+        private readonly List<EventHandler> _clickHandlers;
 
         public int X { get; }
         public int Y { get; }
+
         public bool IsShip { get; set; }
         public bool IsDestroyed { get; set; }
+        public bool IsChecked { get; set; }
+
+        private event EventHandler Click
+        {
+            add
+            {
+                _button.Click += value;
+                _clickHandlers.Add(value);
+            }
+            remove => _button.Click -= value;
+        }
 
         public Cell(int y, int x)
         {
+            _clickHandlers = new List<EventHandler>();
             X = x;
             Y = y;
-            IsShip = IsDestroyed = false;
+            IsShip = IsChecked = IsDestroyed = false;
 
             _button = new Button
             {
@@ -58,14 +89,20 @@ namespace Seabattle.Models
                 Height = Height,
                 FlatStyle = FlatStyle.Flat,
                 AutoSize = false,
-                Font = new Font("Arial", 16F, FontStyle.Bold, GraphicsUnit.Point, (byte)204),
+                Font = new Font("Arial", 16F, FontStyle.Bold, GraphicsUnit.Point, (byte) 204),
                 BackColor = Color.LightGray,
                 ForeColor = Color.Black,
-                Text = ""
+                Text = "",
+                TabStop = false
             };
         }
 
-        public void SetClickEvent(EventHandler eventHandler) =>
-            _button.Click += (sender, args) => eventHandler?.Invoke(this, args);
+        public void SetClickEvent(Action<object, EventArgs, Field> eventHandler, Field field)
+        {
+            foreach (var handler in _clickHandlers) Click -= handler;
+            _clickHandlers.Clear();
+
+            Click += (sender, args) => eventHandler?.Invoke(this, args, field);
+        }
     }
 }

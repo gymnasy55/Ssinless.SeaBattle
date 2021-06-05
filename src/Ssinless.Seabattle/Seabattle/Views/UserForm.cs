@@ -6,17 +6,14 @@ namespace Seabattle.Views
 {
     public partial class UserForm : Form
     {
-        private readonly Field _field;
-
         private (ShipType type, ShipOrientation orientation) _selectedShip;
 
         public event Action ShipChanged;
 
-        public UserForm(Field field)
+        public UserForm()
         {
             InitializeComponent();
             this.SetIcon();
-            _field = field;
 
             ShipChanged = SetSelected;
         }
