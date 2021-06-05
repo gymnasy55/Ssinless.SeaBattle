@@ -16,7 +16,7 @@ namespace Seabattle
             form.Icon = Global.Logo2;
         }
 
-        public static void AddToForm(this Field field, Form form, int left, int top)
+        public static void AddField(this Form form, Field field, int left, int top)
         {
             int x = left, y = top;
 

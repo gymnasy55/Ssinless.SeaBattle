@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Drawing;
-using System.Linq.Expressions;
-using System.Windows.Forms;
 using Seabattle.Models;
 using Seabattle.Views;
 
@@ -60,20 +58,20 @@ namespace Seabattle.Controllers
 
         public void Start()
         {
-            _field1.AddToForm(_userForm1, Cell.DefaultXIndention, Cell.DefaultYIndention);
+            _userForm1.AddField(_field1, Cell.DefaultXIndention, Cell.DefaultYIndention);
 
             _field1.ForEach(cell => cell.SetClickEvent(BtnClickedOnUserForm, _field1));
 
             _userForm1.ShowDialog();
 
-            _field2.AddToForm(_userForm2, Cell.DefaultXIndention, Cell.DefaultYIndention);
+            _userForm2.AddField(_field2, Cell.DefaultXIndention, Cell.DefaultYIndention);
 
             _field2.ForEach(cell => cell.SetClickEvent(BtnClickedOnUserForm, _field2));
 
             _userForm2.ShowDialog();
 
-            _field1.AddToForm(_battleForm, Cell.DefaultXIndention, Cell.DefaultYIndention);
-            _field2.AddToForm(_battleForm, Cell.DefaultXIndention + Game.DefaultUserFormClientSize.Width, Cell.DefaultYIndention);
+            _battleForm.AddField(_field1, Cell.DefaultXIndention, Cell.DefaultYIndention);
+            _battleForm.AddField(_field2, Cell.DefaultXIndention + Game.DefaultUserFormClientSize.Width, Cell.DefaultYIndention);
 
             _field1.ForEach(cell =>
             {
