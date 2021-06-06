@@ -79,5 +79,15 @@ namespace Seabattle.Views
         {
             _lblPlayer.Text = text;
         }
+
+        private void BattleForm_Activated(object sender, EventArgs e)
+        {
+            _timer.Enabled = true;
+        }
+
+        private void BattleForm_Deactivate(object sender, EventArgs e)
+        {
+            _timer.Enabled = false;
+        }
     }
 }

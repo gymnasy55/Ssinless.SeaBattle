@@ -107,6 +107,7 @@ namespace Seabattle.Models
         {
             if (IsShip)
             {
+                _button.ForeColor = Color.Red;
                 Text = "X";
                 IsDestroyed = true;
                 IsChecked = true;

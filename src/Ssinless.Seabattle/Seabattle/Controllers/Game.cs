@@ -40,7 +40,7 @@ namespace Seabattle.Controllers
         {
             _user1 = new User();
             _user2 = new User();
-
+          
             _userForm1 = Game.InitializeUserForm();
             _userForm2 = Game.InitializeUserForm();
 
@@ -77,6 +77,18 @@ namespace Seabattle.Controllers
             {
                 user.SelectedShip = ship;
                 form.SetSelectedShipText(ship.ToString());
+
+                if (ship.Type == ShipType.None
+                    && (user.NumberBattleship < Ship.MaxNumber(ShipType.Battleship)
+                        || user.NumberCruiser < Ship.MaxNumber(ShipType.Cruiser)
+                        || user.NumberCruiser < Ship.MaxNumber(ShipType.Cruiser)
+                        || user.NumberCruiser < Ship.MaxNumber(ShipType.Cruiser)))
+                {
+                    MessageService.Warning("Enter proper number of ships!");
+                    return false;
+                }
+
+                return true;
             };
 
             user.ForEach(cell => cell.SetClickEvent(BtnClickedOnUserForm, user));
@@ -90,22 +102,25 @@ namespace Seabattle.Controllers
             user1.ForEach(cell =>
             {
                 cell.Text = "";
-                cell.SetClickEvent(BtnClickedOnBattleForm, user2);
+                cell.SetClickEvent(BtnClickedOnBattleForm, user1);
             });
             user2.ForEach(cell =>
             {
                 cell.Text = "";
-                cell.SetClickEvent(BtnClickedOnBattleForm, user1);
+                cell.SetClickEvent(BtnClickedOnBattleForm, user2);
             });
 
             _currentUser = user2;
+            user2.Enabled = false;
+            user1.Enabled = true;
             ChangePlayer();
         }
 
         private void BtnClickedOnUserForm(object sender, EventArgs e, User user)
         {
             var cell = (Cell) sender;
-            cell.Mark();
+            if (EnablePlaceShip(user, cell))
+                PlaceShip(user, cell);
         }
 
         private void BtnClickedOnBattleForm(object sender, EventArgs e, User user)
@@ -114,7 +129,9 @@ namespace Seabattle.Controllers
 
             if (cell.Open())
             {
-                user.Score++;
+                if (IsShipDestoyed(user, cell))
+                    OpenAroundShip(user, cell);
+                user.DestroyedShips++;
                 if (CheckWin())
                 {
                     MessageService.Info(_currentUser == _user1 ? "User 1 won" : "User 2 won");
@@ -126,21 +143,81 @@ namespace Seabattle.Controllers
 
         private void ChangePlayer()
         {
+            _user1.Enabled = !_user1.Enabled;
+            _user2.Enabled = !_user2.Enabled;
+
             if (_currentUser == _user2)
             {
-                _user2.Enabled = true;
-                _user1.Enabled = false;
                 _battleForm.SetPlayerText("User 1");
                 _currentUser = _user1;
                 return;
             }
 
-            _user2.Enabled = false;
-            _user1.Enabled = true;
             _battleForm.SetPlayerText("User 2");
             _currentUser = _user2;
         }
 
-        private bool CheckWin() => _user1.Score == _user2.CellsIsShip || _user2.Score == _user1.CellsIsShip;
+        private bool CheckWin() => _user2.DestroyedShips >= _user2.CellsIsShip || _user1.DestroyedShips >= _user1.CellsIsShip;
+
+        private void PlaceShip(User user, Cell startCell)
+        {
+            user.PlaceShip();
+            for(int i = 0; i < user.SelectedShip.Size.Height; i++)
+                for(int j = 0; j < user.SelectedShip.Size.Width; j++)
+                    user[startCell.Y + i, startCell.X + j].Mark();
+        }
+
+        private bool EnablePlaceShip(User user, Cell startCell)
+        {
+            for (int i = 0; i < user.SelectedShip.Size.Height; i++)
+                for (int j = 0; j < user.SelectedShip.Size.Width; j++)
+                    if (!user.Field.IsFieldCell(startCell.Y + i, startCell.X + j) || user.Field.ExistShipsNear(startCell.Y + i, startCell.X + j))
+                        return false;
+            return user.EnablePlaceShip();
+        }
+
+        private void OpenAroundShip(User user, Cell cell)
+        {
+            OpenAroundShipDirected(user, cell, 1);
+            OpenAroundShipDirected(user, cell, -1);
+        }
+
+        private void OpenAroundShipDirected(User user, Cell cell, int direction)
+        {
+            if (user.Field.IsShip(cell.Y, cell.X + direction))
+                OpenAroundShipDirected(user, user[cell.Y, cell.X + direction], direction);
+
+            if (user.Field.IsShip(cell.Y + direction, cell.X))
+                OpenAroundShipDirected(user, user[cell.Y + direction, cell.X], direction);
+
+            OpenAroundCell(user, cell);
+        }
+
+        private void OpenAroundCell(User user, Cell cell)
+        {
+            for(int i = cell.Y - 1; i <= cell.Y + 1; i++)
+                for(int j = cell.X - 1; j <= cell.X + 1; j++)
+                    if (user.Field.IsFieldCell(i, j))
+                        user[i, j].Open();
+        }
+
+        private bool IsShipDestoyed(User user, Cell cell)
+        {
+            return IsShipDestoyedDirected(user, cell, 1) && IsShipDestoyedDirected(user, cell, -1);
+        }
+
+        private bool IsShipDestoyedDirected(User user, Cell cell, int direction)
+        {
+            if (!cell.IsDestroyed)
+                return false;
+
+            if (user.Field.IsShip(cell.Y, cell.X + direction))
+                return IsShipDestoyedDirected(user, user[cell.Y, cell.X + direction], direction);
+
+            if (user.Field.IsShip(cell.Y + direction, cell.X))
+                return IsShipDestoyedDirected(user, user[cell.Y + direction, cell.X], direction);
+
+            return true;
+        }
     }
 }

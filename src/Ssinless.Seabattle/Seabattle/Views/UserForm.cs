@@ -6,7 +6,7 @@ namespace Seabattle.Views
 {
     public partial class UserForm : Form
     {
-        public event Action<Ship> ShipChanged;
+        public event Func<Ship, bool> ShipChanged;
 
         public UserForm()
         {
@@ -43,9 +43,14 @@ namespace Seabattle.Views
 
         #endregion
 
+        private void UserForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!(ShipChanged?.Invoke(new Ship()) ?? false))
+                e.Cancel = true;
+        }
+
         private void btnNext_Click(object sender, EventArgs e)
         {
-            ShipChanged?.Invoke(new Ship());
             Close();
         }
     }

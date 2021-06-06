@@ -12,6 +12,11 @@ namespace Seabattle.Models
 
         public Ship SelectedShip { get; set; }
 
+        public int NumberBattleship {get; set; } = 0;
+        public int NumberCruiser { get; set; } = 0;
+        public int NumberDestroyer { get; set; } = 0;
+        public int NumberBoat { get; set; } = 0;
+
         public Cell this[int y, int x] => Field[y, x];
 
         public bool Enabled
@@ -20,7 +25,7 @@ namespace Seabattle.Models
             set => Field.Enabled = value;
         }
 
-        public int Score { get; set; }
+        public int DestroyedShips { get; set; }
 
         public int CellsIsShip
         {
@@ -32,7 +37,7 @@ namespace Seabattle.Models
                 {
                     if (cell.IsShip) result++;
                 });
-
+                
                 return result;
             }
         }
@@ -43,6 +48,29 @@ namespace Seabattle.Models
         {
             Field = new Field();
             SelectedShip = new Ship();
+        }
+
+        public bool EnablePlaceShip()
+        {
+            return SelectedShip.Type switch
+            {
+                ShipType.Battleship => NumberBattleship < Ship.MaxNumber(ShipType.Battleship),
+                ShipType.Cruiser => NumberCruiser < Ship.MaxNumber(ShipType.Cruiser),
+                ShipType.Destroyer => NumberDestroyer < Ship.MaxNumber(ShipType.Destroyer),
+                ShipType.Boat => NumberBoat < Ship.MaxNumber(ShipType.Boat),
+                _ => false,
+            };
+        }
+
+        public void PlaceShip()
+        {
+            _ = SelectedShip.Type switch
+            {
+                ShipType.Battleship => NumberBattleship++,
+                ShipType.Cruiser => NumberCruiser++,
+                ShipType.Destroyer => NumberDestroyer++,
+                ShipType.Boat => NumberBoat++
+            };
         }
     }
 }

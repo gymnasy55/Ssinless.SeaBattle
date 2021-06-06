@@ -155,6 +155,7 @@ namespace Seabattle.Views
             this.Controls.Add(this.btnBattleshipHorizontal);
             this.Name = "UserForm";
             this.Text = "User";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.UserForm_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

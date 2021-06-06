@@ -54,6 +54,13 @@ namespace Seabattle.Models
             foreach (var cell in _cells) action(cell);
         }
 
+        public bool IsFieldCell(int y, int x) => x >= 0 && y >= 0 && x < Width && y < Height;
+
+        public bool IsShip(int y, int x) => IsFieldCell(y, x) && this[y, x].IsShip;
+
+        public bool ExistShipsNear(int y, int x) => 
+            IsShip(y - 1, x) || IsShip(y + 1, x) || IsShip(y - 1, x - 1) || IsShip(y - 1, x + 1) || IsShip(y + 1, x - 1) || IsShip(y + 1, x + 1) || IsShip(y, x - 1) || IsShip(y, x + 1);
+
         public Field()
         {
             _cells = new Cell[Field.Height, Field.Width];

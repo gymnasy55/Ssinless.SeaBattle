@@ -13,9 +13,9 @@ namespace Seabattle.Service
             MessageBox.Show(info, @"Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
         public static void Warning(string warning) =>
-            MessageBox.Show(warning, @"Information", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(warning, @"Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 
         public static void Error(string error) =>
-            MessageBox.Show(error, @"Information", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(error, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
     }
 }
